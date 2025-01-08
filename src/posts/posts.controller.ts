@@ -10,6 +10,6 @@ export class PostsController {
 
     @Post()
     createPost(@Auth() user: User, @Body() data: CreatePostDto) {
-        return this.postsservice.createPost(data);
+        // return this.postsservice.createPost(data);
     }
 }
