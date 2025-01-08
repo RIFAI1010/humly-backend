@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// We could not retrieve columns for the underlying table. Either it has none or you are missing rights to see them. Please check your privileges.
+model User {
+  id          String         @id @default(cuid())
+  username    String         @unique
+  password    String 
+  email       String         @unique
+  refreshToken String?
+  userDetails UserDetail?
+  posts       Post[]
+  likes       Like[]
+  comments    Comment[]
+  notifications Notification[]
+  follower    Follow[]       @relation("Follower")
+  following   Follow[]       @relation("Following")
+  reports     Report[]
+}
+
+model UserDetail {
+  id       String @id @default(cuid())
+  userId   String @unique
+  user     User   @relation(fields: [userId], references: [id])
+  image    String?
+  name     String?
+  bio      String?
+  status   String // 'private', 'public', 'deactive'
+}
+
+model Post {
+  id        Int         @id @default(autoincrement())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id])
+  content   String
+  status    String // 'public', 'archive'
+  createdAt DateTime    @default(now())
+  likes     Like[]
+  comments  Comment[]
+  reports   Report[]
+  images    PostImage[]
+}
+
+model PostImage {
+  id        Int    @id @default(autoincrement())
+  postId    Int
+  post      Post        @relation(fields: [postId], references: [id])
+  image     String
+}
+
+model Like {
+  id     Int    @id @default(autoincrement())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+  postId Int
+  post   Post   @relation(fields: [postId], references: [id])
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  message   String
+  createdAt DateTime @default(now())
+}
+
+model Comment {
+  id        Int       @id @default(autoincrement())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  postId    Int
+  post      Post      @relation(fields: [postId], references: [id])
+  content   String
+  parentId  Int?
+  parent    Comment?  @relation("Replies", fields: [parentId], references: [id])
+  replies   Comment[] @relation("Replies")
+  createdAt DateTime  @default(now())
+}
+
+model Follow {
+  id           Int    @id @default(autoincrement())
+  followerId   String
+  follower     User   @relation("Follower", fields: [followerId], references: [id])
+  followedId   String
+  followed     User   @relation("Following", fields: [followedId], references: [id])
+  createdAt    DateTime @default(now())
+}
+
+model Report {
+  id          Int      @id @default(autoincrement())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  postId      Int
+  post        Post     @relation(fields: [postId], references: [id])
+  reportType  String
+  createdAt   DateTime @default(now())
+}
+
+
+
+/// We could not retrieve columns for the underlying table. Either it has none or you are missing rights to see them. Please check your privileges.
+// model prisma_migrations {
+// @@map("_prisma_migrations")
+// }

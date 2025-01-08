@@ -1,0 +1,37 @@
+/// oleh midleware jika user private membaca apakah user yang ingin melihat sudah mefollow user yang dilihat
+
+user
+POST /register
+POST /login
+POST /refresh
+GET /profile
+GET /user/:userid
+GET /search/:term
+
+post
+POST /post
+GET /explore
+GET /post/following
+GET /post/:id
+GET /post/:user_id
+
+comment
+GET /comments/:post_id
+/// GET /parent/:comment_id
+POST /comments
+
+like
+POST /like
+DELETE /like
+
+notification
+GET /notifications
+
+follow
+POST /follow
+DELETE /follow
+GET /followers
+GET /following
+
+report
+POST /report
