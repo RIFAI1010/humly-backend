@@ -1,19 +1,19 @@
 /// oleh midleware jika user private membaca apakah user yang ingin melihat sudah mefollow user yang dilihat
 
 user
-POST /register
-POST /login
-POST /refresh
-GET /profile
-GET /user/:userid
-GET /search/:term
+POST /register //done
+POST /login //done
+POST /refresh //done
+GET /profile //done
+GET /user/:userid //done
+GET /search/:term //done
 
 post
-POST /post
-GET /explore
-GET /post/following
-GET /post/:id
-GET /post/:user_id
+POST /post //done
+GET /explore //done
+GET /post/following //done
+GET /post/:id //done
+GET /post/:user_id //done
 
 comment
 GET /comments/:post_id
@@ -28,10 +28,10 @@ notification
 GET /notifications
 
 follow
-POST /follow
-DELETE /follow
-GET /followers
-GET /following
+POST /follow //done
+DELETE /follow //done
+GET /followers //done
+GET /following //done
 
 report
 POST /report

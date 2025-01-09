@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -19,9 +19,9 @@ export class UsersService {
     }
 
     async getProfile(userId: string, id: any) {
-        if (!id) {
-            throw new BadRequestException('User ID is required');
-        }
+        // if (!id) {
+        //     throw new BadRequestException('User ID is required');
+        // }
         const user = await this.prisma.user.findUnique({
             where: { id: id },
             select: { id: true, username: true, email: true, userDetails: true },
@@ -31,14 +31,16 @@ export class UsersService {
             throw new NotFoundException('User not found');
         }
         
-        const follow = await this.prisma.follow.findFirst({
-            where: {
-                followerId: userId,
-                followedId: user.id,
-            },
-        })
-        if (!follow && user.userDetails.status === 'private') {
-            throw new BadRequestException('User Is Private');
+        if (user.userDetails.status === 'private') {
+            const follow = await this.prisma.follow.findFirst({
+                where: {
+                    followerId: userId,
+                    followedId: user.id,
+                }
+            })
+            if (!follow) {
+                throw new ForbiddenException('User is Private');
+            }
         }
 
         return user;

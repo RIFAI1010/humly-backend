@@ -1,12 +1,11 @@
 import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
-import { AuthMiddleware } from './common/middlewares/auth.middleware';
-import { PostsController } from './posts/posts.controller';
 import { PostsModule } from './posts/posts.module';
+import { FollowsModule } from './follows/follows.module';
 
 @Module({
-  imports: [AuthModule, UsersModule, PostsModule],
+  imports: [AuthModule, UsersModule, PostsModule, FollowsModule],
 })
 
 export class AppModule {}

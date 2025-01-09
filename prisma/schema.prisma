@@ -38,21 +38,21 @@ model UserDetail {
   image    String?
   name     String?
   bio      String?
-  status   Status @default(public)
+  status   StatusUser @default(public)
 }
 
-enum Status {
+enum StatusUser {
   private
   public
   deactive
 }
 
 model Post {
-  id        Int         @id @default(autoincrement())
+  id        String         @id @default(cuid())
   userId    String
   user      User        @relation(fields: [userId], references: [id])
   content   String
-  status    String // 'public', 'archive'
+  status    StatusPost @default(public)
   createdAt DateTime    @default(now())
   likes     Like[]
   comments  Comment[]
@@ -60,23 +60,28 @@ model Post {
   images    PostImage[]
 }
 
+enum StatusPost {
+  public
+  archive
+}
+
 model PostImage {
-  id        Int    @id @default(autoincrement())
-  postId    Int
+  id        String    @id @default(cuid())
+  postId    String
   post      Post        @relation(fields: [postId], references: [id])
   image     String
 }
 
 model Like {
-  id     Int    @id @default(autoincrement())
+  id     String    @id @default(cuid())
   userId String
   user   User   @relation(fields: [userId], references: [id])
-  postId Int
+  postId String
   post   Post   @relation(fields: [postId], references: [id])
 }
 
 model Notification {
-  id        Int      @id @default(autoincrement())
+  id        String      @id @default(cuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id])
   message   String
@@ -84,32 +89,34 @@ model Notification {
 }
 
 model Comment {
-  id        Int       @id @default(autoincrement())
+  id        String       @id @default(cuid())
   userId    String
   user      User      @relation(fields: [userId], references: [id])
-  postId    Int
+  postId    String
   post      Post      @relation(fields: [postId], references: [id])
   content   String
-  parentId  Int?
+  parentId  String?
   parent    Comment?  @relation("Replies", fields: [parentId], references: [id])
   replies   Comment[] @relation("Replies")
   createdAt DateTime  @default(now())
 }
 
 model Follow {
-  id           Int    @id @default(autoincrement())
+  id           String    @id @default(cuid())
   followerId   String
   follower     User   @relation("Follower", fields: [followerId], references: [id])
   followedId   String
   followed     User   @relation("Following", fields: [followedId], references: [id])
   createdAt    DateTime @default(now())
+  
+  @@unique([followerId, followedId]) // Menambahkan unique constraint
 }
 
 model Report {
-  id          Int      @id @default(autoincrement())
+  id          String      @id @default(cuid())
   userId      String
   user        User     @relation(fields: [userId], references: [id])
-  postId      Int
+  postId      String
   post        Post     @relation(fields: [postId], references: [id])
   reportType  String
   createdAt   DateTime @default(now())

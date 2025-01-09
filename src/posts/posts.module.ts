@@ -11,6 +11,6 @@ import { AuthMiddleware } from 'src/common/middlewares/auth.middleware';
 })
 export class PostsModule {
     configure(consumer: MiddlewareConsumer) {
-            consumer.apply(AuthMiddleware).forRoutes('*'); // Terapkan untuk semua rute
-        }
+        consumer.apply(AuthMiddleware).forRoutes(PostsController);
+    }
 }
