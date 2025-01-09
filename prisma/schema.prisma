@@ -14,6 +14,7 @@ model User {
   password    String 
   email       String         @unique
   refreshToken String?
+  role        Role @default(User)
   userDetails UserDetail?
   posts       Post[]
   likes       Like[]
@@ -24,6 +25,12 @@ model User {
   reports     Report[]
 }
 
+enum Role {
+  User
+  Seller
+  Admin
+}
+
 model UserDetail {
   id       String @id @default(cuid())
   userId   String @unique
@@ -31,7 +38,13 @@ model UserDetail {
   image    String?
   name     String?
   bio      String?
-  status   String // 'private', 'public', 'deactive'
+  status   Status @default(public)
+}
+
+enum Status {
+  private
+  public
+  deactive
 }
 
 model Post {

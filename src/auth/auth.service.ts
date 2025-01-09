@@ -51,7 +51,7 @@ export class AuthService {
         if (!user || !(await bcrypt.compare(data.password, user.password))) {
             throw new UnauthorizedException('Invalid credentials');
         }
-        const payload = { id: user.id, email: user.email };
+        const payload = { id: user.id, email: user.email, username: user.username, role: user.role };
         const accessToken = generateAccessToken(payload);
         const refreshToken = generateRefreshToken(payload);
 
@@ -77,7 +77,7 @@ export class AuthService {
             }
 
             // Generate new access token
-            const accessToken = generateAccessToken({ sub: payload.sub });
+            const accessToken = generateAccessToken({ id: user.id, email: user.email, username: user.username, role: user.role });
             return { accessToken };
         } catch (error) {
             if (error instanceof jwt.TokenExpiredError) {
