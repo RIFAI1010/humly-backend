@@ -15,7 +15,7 @@ async function bootstrap() {
   app.use(cookieParser());
 
   app.useStaticAssets(join(__dirname, '../..', 'uploads'), {
-    prefix: '/uploads/', // URL prefix untuk mengakses file
+    prefix: '/uploads/',
   });
 
   app.use('/tes', function (req, res, next) {

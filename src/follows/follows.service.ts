@@ -7,7 +7,7 @@ export class FollowsService {
     constructor(private readonly prisma: PrismaService) { }
 
     async follow(followerId: string, followedId: string) {
-        const existingFollow = await this.prisma.follow.findUnique({
+        const follow = await this.prisma.follow.findUnique({
             where: {
                 followerId_followedId: {
                     followerId,
@@ -15,23 +15,20 @@ export class FollowsService {
                 },
             },
         });
-
-        if (existingFollow) {
+        if (follow) {
             throw new BadRequestException('Already following this user');
         }
-
-        const follow = await this.prisma.follow.create({
+        await this.prisma.follow.create({
             data: {
                 followerId,
                 followedId,
             },
         });
-        // return follow;
         return { message: 'Follow successful' };
     }
 
     async unFollow(followerId: string, followedId: string) {
-        const existingFollow = await this.prisma.follow.findUnique({
+        const follow = await this.prisma.follow.findUnique({
             where: {
                 followerId_followedId: {
                     followerId,
@@ -39,12 +36,10 @@ export class FollowsService {
                 },
             },
         });
-
-        if(!existingFollow) {
+        if(!follow) {
             throw new BadRequestException('Not following this user');
         }
-
-        const unFollow = await this.prisma.follow.delete({
+        await this.prisma.follow.delete({
             where: {
                 followerId_followedId: {
                     followerId,
@@ -52,7 +47,6 @@ export class FollowsService {
                 },
             },
         });
-
         return { message: 'Unfollow successful' };
     }
 

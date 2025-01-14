@@ -10,28 +10,26 @@ export class UsersService {
             where: { id: userId },
             select: { id: true, username: true, email: true, userDetails: true },
         });
-
         if (!user) {
             throw new NotFoundException('User not found');
         }
-
         return user;
     }
 
     async getProfile(userId: string, id: any) {
-        // if (!id) {
-        //     throw new BadRequestException('User ID is required');
-        // }
         const user = await this.prisma.user.findUnique({
             where: { id: id },
-            select: { id: true, username: true, email: true, userDetails: true },
+            select: { 
+                id: true,
+                username: true,
+                email: true,
+                userDetails: true
+            },
         });
-
         if (!user) {
             throw new NotFoundException('User not found');
         }
-        
-        if (user.userDetails.status === 'private') {
+        if (user.userDetails.status === 'private' && userId !== user.id) {
             const follow = await this.prisma.follow.findFirst({
                 where: {
                     followerId: userId,
@@ -42,7 +40,6 @@ export class UsersService {
                 throw new ForbiddenException('User is Private');
             }
         }
-
         return user;
     }
 

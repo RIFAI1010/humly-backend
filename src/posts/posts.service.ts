@@ -1,17 +1,15 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreatePostDto } from './dto';
+import { CreateCommentDto, CreatePostDto } from './dto';
 import { StatusPost } from '@prisma/client';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class PostsService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService, private readonly userService: UsersService) { }
 
     async createPost(userId: string, data: CreatePostDto) {
         const { content, status, images } = data;
-
-
-        // Buat post baru
         const post = await this.prisma.post.create({
             data: {
                 userId,
@@ -19,7 +17,6 @@ export class PostsService {
                 status: status as StatusPost,
             },
         });
-
         // Simpan gambar menggunakan createMany
         if (images && images.length > 0) {
             await this.prisma.postImage.createMany({
@@ -29,7 +26,6 @@ export class PostsService {
                 })),
             });
         }
-
         return post;
     }
 
@@ -37,13 +33,14 @@ export class PostsService {
         page = page || 1;
         limit = limit || 10;
         const posts = await this.prisma.post.findMany({
+            where: { status: 'public' },
             skip: (page - 1) * limit,  // Pagination skip
             take: limit,  // Limit jumlah posts
             include: {
                 user: {
                     select: {
-                        username: true,
                         id: true,
+                        username: true,
                     },
                 },
                 images: true,
@@ -52,7 +49,6 @@ export class PostsService {
                 createdAt: 'desc',
             }
         });
-
         return posts;
     }
 
@@ -65,24 +61,23 @@ export class PostsService {
                 select: { followedId: true },
             })
             .then((follows) => follows.map((follow) => follow.followedId));
-
         if (followedIds.length === 0) {
-            return []; // Return empty array jika tidak ada yang di-follow
+            return [];
         }
-
         return this.prisma.post.findMany({
             where: {
+                status: 'public',
                 userId: {
                     in: followedIds,
                 },
             },
-            skip: (page - 1) * limit,  // Pagination skip
-            take: limit,  // Limit jumlah posts
+            skip: (page - 1) * limit,
+            take: limit, 
             include: {
                 user: {
                     select: {
-                        username: true,
                         id: true,
+                        username: true,
                     },
                 },
                 images: true,
@@ -91,26 +86,26 @@ export class PostsService {
     }
 
     async getPost(userId: string, id: string) {
-
         const post = await this.prisma.post.findUnique({
             where: { id },
             include: {
                 user: {
                     select: {
-                        username: true,
                         id: true,
+                        username: true,
                         userDetails: true
                     },
                 },
                 images: true,
             },
         });
-
         if (!post) {
             throw new NotFoundException('Post not found');
         }
-
-        if (post.status === 'archive') {
+        if (post.status === 'archive' && userId !== post.userId) {
+            throw new ForbiddenException('Post Is Archive');
+        }
+        if (post.user.userDetails.status === 'private' && userId !== post.userId) {
             const follow = await this.prisma.follow.findFirst({
                 where: {
                     followerId: userId,
@@ -120,46 +115,19 @@ export class PostsService {
             if (!follow) {
                 throw new ForbiddenException('User is Private');
             }
-            throw new ForbiddenException('Post Is Archive');
         }
-
         return post;
     }
 
     async getUserPosts(userId: string, id: string) {
-
-        const user = await this.prisma.user.findUnique({
-            where: { id: id },
-            select: {
-                username: true,
-                id: true,
-                userDetails: true
-            }
-        })
-
-        if (!user) {
-            throw new NotFoundException('User not found');
-        }
-
-        if (user.userDetails.status === 'private') {
-            const follow = await this.prisma.follow.findFirst({
-                where: {
-                    followerId: userId,
-                    followedId: user.id,
-                }
-            })
-            if (!follow) {
-                throw new ForbiddenException('User is Private');
-            }
-        }
-
+        const user = await this.userService.getProfile(userId, id);
         const posts = await this.prisma.post.findMany({
             where: { userId: id, status: 'public' },
             include: {
                 user: {
                     select: {
-                        username: true,
                         id: true,
+                        username: true,
                         userDetails: true
                     },
                 },
@@ -168,5 +136,132 @@ export class PostsService {
         });
 
         return posts;
+    }
+
+    async likePost(userId: string, postId: string) {
+        const post = await this.getPost(userId, postId);
+        const like = await this.prisma.like.findFirst({
+            where: {
+                userId: userId,
+                postId: postId,
+            },
+        });
+        if (like) {
+            throw new BadRequestException('Post already liked');
+        }
+        await this.prisma.like.create({
+            data: {
+                userId: userId,
+                postId: postId,
+            },
+        });
+        return { message: 'Post liked successfully' };
+    }
+
+    async unlikePost(userId: string, postId: string) {
+        const post = await this.getPost(userId, postId);
+        const like = await this.prisma.like.findFirst({
+            where: {
+                userId: userId,
+                postId: postId,
+            },
+        });
+        if (!like) {
+            throw new BadRequestException('Post not liked');
+        }
+        await this.prisma.like.delete({
+            where: {
+                id: like.id,
+            },
+        });
+        return { message: 'Post unliked successfully' };
+    }
+
+    async createComment(userId: string, data: CreateCommentDto) {
+        const { postId, content, parentId } = data;
+        const parentComment = await this.prisma.comment.findUnique({
+            where: {
+                id: parentId,
+            },
+        })
+        if (!parentComment) {
+            throw new NotFoundException('Parent comment not found');
+        }
+        const post = await this.getPost(userId, postId);
+        const comment = await this.prisma.comment.create({
+            data: {
+                userId: userId,
+                postId: postId,
+                content: content,
+                parentId: parentId ?? null,
+            },
+        });
+        return {
+            message: 'Comment created successfully',
+            comment: comment,
+        };
+    }
+
+    async getComments(userId: string, postId: string) {
+        const post = await this.getPost(userId, postId);
+        const comments = await this.prisma.comment.findMany({
+            where: {
+                postId: postId,
+                parentId: null,
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        username: true,
+                        userDetails: true
+                    },
+                },
+                replies: {
+                    take: 1,
+                    orderBy: {
+                        createdAt: 'desc',
+                    },
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                username: true,
+                                userDetails: true
+                            },
+                        },
+                    },
+                }
+            }
+        })
+    }
+
+    async getReplies(userId: string, commentId: string) {
+        const comments = await this.prisma.comment.findFirst({
+            where: {
+                id: commentId,
+            },
+            include: {
+                post: true,
+            }
+        })
+        if (!comments) {
+            throw new NotFoundException('Comment not found');
+        }
+        const post = await this.getPost(userId, comments.post.id);
+        const replies = await this.prisma.comment.findMany({
+            where: {
+                parentId: commentId,
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        username: true,
+                        userDetails: true
+                    },
+                },
+            }
+        })
     }
 }

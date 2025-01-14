@@ -12,13 +12,11 @@ export class AuthService {
     constructor(private readonly prisma: PrismaService) { }
 
     async register(data: RegisterDto) {
-
         const existingUser = await this.prisma.user.findFirst({
             where: {
                 OR: [{ email: data.email }, { username: data.username }],
             },
         });
-
         if (existingUser) {
             throw new BadRequestException(
                 existingUser.email === data.email
@@ -26,9 +24,7 @@ export class AuthService {
                     : 'Username is already taken',
             );
         }
-
         const hashedPassword = await bcrypt.hash(data.password, 10);
-        
         const user = await this.prisma.user.create({
             data: {
                 ...data,
@@ -40,7 +36,6 @@ export class AuthService {
                 }
             },
         });
-        
         return { message: 'User registered successfully' };
     }
 
@@ -54,7 +49,6 @@ export class AuthService {
         const payload = { id: user.id, email: user.email, username: user.username, role: user.role };
         const accessToken = generateAccessToken(payload);
         const refreshToken = generateRefreshToken(payload);
-
         await this.prisma.user.update({
             where: { id: user.id },
             data: { refreshToken },
@@ -66,16 +60,13 @@ export class AuthService {
         // let decode = jwt.decode(refreshToken) as any;
         try {
             const payload = jwt.verify(refreshToken, REFRESH_SECRET) as any;
-
             // Optional: Check refresh token validity in database
             const user = await this.prisma.user.findUnique({
                 where: { id: payload.id },
             });
-
             if (!user || user.refreshToken !== refreshToken) {
                 throw new UnauthorizedException('Invalid refresh token');
             }
-
             // Generate new access token
             const accessToken = generateAccessToken({ id: user.id, email: user.email, username: user.username, role: user.role });
             return { accessToken };

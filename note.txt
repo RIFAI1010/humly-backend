@@ -16,13 +16,13 @@ GET /post/:id //done
 GET /post/:user_id //done
 
 comment
-GET /comments/:post_id
-/// GET /parent/:comment_id
-POST /comments
+GET /comments/:post_id //done
+/// GET /parent/:comment_id //done
+POST /comments //done
 
 like
-POST /like
-DELETE /like
+POST /like //done
+DELETE /like //done
 
 notification
 GET /notifications
