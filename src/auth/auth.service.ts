@@ -43,6 +43,7 @@ export class AuthService {
         const user = await this.prisma.user.findFirst({
             where: { email: data.email },
         })
+        console.log(user);
         if (!user || !(await bcrypt.compare(data.password, user.password))) {
             throw new UnauthorizedException('Invalid credentials');
         }

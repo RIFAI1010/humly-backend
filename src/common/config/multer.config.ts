@@ -3,6 +3,7 @@ import { diskStorage } from 'multer';
 import { BadRequestException } from '@nestjs/common';
 import { extname } from 'path';
 import { existsSync, mkdirSync } from 'fs';
+import { unlink } from 'fs/promises';
 
 export const multerConfig = {
     dest: './uploads/posts', // Folder tujuan penyimpanan file

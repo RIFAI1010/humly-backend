@@ -8,18 +8,14 @@ export class AuthMiddleware implements NestMiddleware {
   async use(req: any, res: Response, next: NextFunction) {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) {
-      // return next();
       throw new UnauthorizedException('No token provided');
     }
-
     try {
       const decoded = jwt.verify(token, SECRET) as any;
-      // console.log(decoded);
       req.user = decoded;
     } catch (error) {
       throw new UnauthorizedException('Invalid or expired token');
     }
-
     next();
   }
 }

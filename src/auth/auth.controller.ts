@@ -27,9 +27,8 @@ export class AuthController {
       return { accessToken };
     } catch (error) {
       res.clearCookie('refreshToken');
+      throw error;
     }
-
-    
   }
 
   @Post('refresh')

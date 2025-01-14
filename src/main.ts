@@ -5,15 +5,17 @@ import path, { join } from 'path';
 import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import * as express from 'express';
+import { LoggerMiddleware } from './common/middlewares/logger.middleware';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 
 // console.log('Static Assets Path:', join(__dirname, '../..', 'uploads'));
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+  app.useGlobalInterceptors(new LoggingInterceptor());
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));
   app.use(cookieParser());
-
   app.useStaticAssets(join(__dirname, '../..', 'uploads'), {
     prefix: '/uploads/',
   });

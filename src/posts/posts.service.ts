@@ -9,24 +9,33 @@ export class PostsService {
     constructor(private readonly prisma: PrismaService, private readonly userService: UsersService) { }
 
     async createPost(userId: string, data: CreatePostDto) {
-        const { content, status, images } = data;
-        const post = await this.prisma.post.create({
-            data: {
-                userId,
-                content,
-                status: status as StatusPost,
-            },
-        });
-        // Simpan gambar menggunakan createMany
-        if (images && images.length > 0) {
-            await this.prisma.postImage.createMany({
-                data: images.map((image: string) => ({
-                    postId: post.id,
-                    image,
-                })),
+        try {
+            return await this.prisma.$transaction(async (prisma) => {
+                const { content, status, images } = data;
+
+                const post = await prisma.post.create({
+                    data: {
+                        userId,
+                        content,
+                        status: status as StatusPost,
+                    },
+                });
+
+                if (images && images.length > 0) {
+                    await prisma.postImage.createMany({
+                        data: images.map((image: string) => ({
+                            postId: post.id,
+                            image,
+                        })),
+                    });
+                }
+
+                return post;
             });
+        } catch (error) {
+            // Re-throw error untuk ditangani di controller
+            throw error;
         }
-        return post;
     }
 
     async getExplorePosts(page: number, limit: number) {
@@ -44,6 +53,12 @@ export class PostsService {
                     },
                 },
                 images: true,
+                _count: {
+                    select: {
+                        likes: true,
+                        comments: true
+                    }
+                }
             },
             orderBy: {
                 createdAt: 'desc',
@@ -72,7 +87,7 @@ export class PostsService {
                 },
             },
             skip: (page - 1) * limit,
-            take: limit, 
+            take: limit,
             include: {
                 user: {
                     select: {
@@ -81,6 +96,12 @@ export class PostsService {
                     },
                 },
                 images: true,
+                _count: {
+                    select: {
+                        likes: true,
+                        comments: true
+                    }
+                }
             },
         });
     }
@@ -97,6 +118,12 @@ export class PostsService {
                     },
                 },
                 images: true,
+                _count: {
+                    select: {
+                        likes: true,
+                        comments: true
+                    }
+                }
             },
         });
         if (!post) {
@@ -132,6 +159,12 @@ export class PostsService {
                     },
                 },
                 images: true,
+                _count: {
+                    select: {
+                        likes: true,
+                        comments: true
+                    }
+                }
             },
         });
 
@@ -179,14 +212,17 @@ export class PostsService {
 
     async createComment(userId: string, data: CreateCommentDto) {
         const { postId, content, parentId } = data;
-        const parentComment = await this.prisma.comment.findUnique({
-            where: {
-                id: parentId,
-            },
-        })
-        if (!parentComment) {
-            throw new NotFoundException('Parent comment not found');
+        if (parentId) {
+            const parentComment = await this.prisma.comment.findUnique({
+                where: {
+                    id: parentId,
+                },
+            })
+            if (!parentComment) {
+                throw new NotFoundException('Parent comment not found');
+            }
         }
+
         const post = await this.getPost(userId, postId);
         const comment = await this.prisma.comment.create({
             data: {

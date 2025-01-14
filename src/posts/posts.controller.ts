@@ -4,22 +4,36 @@ import { CreateCommentDto, CreatePostDto } from './dto';
 import { User } from '@prisma/client';
 import { Auth } from 'src/common/decorators/user.decorator';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { multerOptions } from 'src/common/config/multer.config';
+import { multerConfig, multerOptions } from 'src/common/config/multer.config';
+import { log } from 'console';
+import { FileCleanupInterceptor } from 'src/common/interceptors/file-cleanup.middleware';
 
 @Controller('posts')
-@UseInterceptors(FilesInterceptor('images', 5, multerOptions)) // Maksimum 5 file
 export class PostsController {
     constructor(private readonly postsservice: PostsService) { }
 
     @Post()
-    createPost(
+    @UseInterceptors(FilesInterceptor('images', 5, multerOptions), FileCleanupInterceptor)
+    async createPost(
         @Auth() user: User,
         @Body() data: CreatePostDto,
         @UploadedFiles() files: Express.Multer.File[],
     ) {
-        // console.log(files);
-        const imagePaths = files.map((file) => `/uploads/posts/${file.filename}`);
-        return this.postsservice.createPost(user.id, { ...data, images: imagePaths });
+        const imagePaths = files.map((file) => ({
+            filename: file.filename,
+            path: `${multerConfig.dest}/${file.filename}`,
+            originalPath: file.path
+        }));
+
+        try {
+            const result = await this.postsservice.createPost(user.id, {
+                ...data,
+                images: imagePaths.map(img => img.path)
+            });
+            return result;
+        } catch (error) {
+            throw error;
+        }
     }
 
     @Get('explore')
@@ -37,7 +51,7 @@ export class PostsController {
         return this.postsservice.getPost(user.id, id);
     }
 
-    @Get(':id/user') 
+    @Get(':id/user')
     getUserPosts(@Auth() user: User, @Param('id') id: string) {
         return this.postsservice.getUserPosts(user.id, id);
     }
@@ -46,7 +60,7 @@ export class PostsController {
     likePost(@Auth() user: User, @Param('id') postId: string) {
         return this.postsservice.likePost(user.id, postId);
     }
-    
+
     @Delete(':id/like')
     unlikePost(@Auth() user: User, @Param('id') postId: string) {
         return this.postsservice.unlikePost(user.id, postId);

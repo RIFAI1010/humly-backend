@@ -7,7 +7,5 @@ export class CreateCommentDto {
     @IsNotEmpty()
     content: string;
 
-    @IsNotEmpty()
-    parentId: string;
-    
+    parentId?: string;
 }

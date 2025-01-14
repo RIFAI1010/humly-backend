@@ -11,10 +11,10 @@ export class UsersController {
 
     @Get('profile')
     getProfile(@Auth() user: User) {
-        // return this.usersService.getProfile(userId);
-        if (!user || !user.id) {
-            throw new UnauthorizedException('User not authenticated');
-        }
+        // // return this.usersService.getProfile(userId);
+        // if (!user || !user.id) {
+        //     throw new UnauthorizedException('User not authenticated');
+        // }
         return this.usersService.getMyProfile(user.id);
     }
 
