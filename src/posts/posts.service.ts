@@ -292,6 +292,8 @@ export class PostsService {
                 }
             }
         })
+
+        return comments;
     }
 
     async getReplies(userId: string, commentId: string) {

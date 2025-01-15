@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Query, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Query, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreateCommentDto, CreatePostDto } from './dto';
 import { User } from '@prisma/client';
@@ -43,19 +43,19 @@ export class PostsController {
 
     @Get('explore')
     getExplorePosts(
-        @Query('page', new ParseIntPipe()) page: number, 
-        @Query('limit', new ParseIntPipe()) limit: number
+        @Query('page') page?: number, 
+        @Query('limit') limit?: number
     ) {
-        return this.postsservice.getExplorePosts(page, limit);
+        return this.postsservice.getExplorePosts(parseInt(page as any), parseInt(limit as any));
     }
 
     @Get('following')
     getFollowingPosts(
         @Auth() user: User,
-        @Query('page', new ParseIntPipe()) page: number, 
-        @Query('limit', new ParseIntPipe()) limit: number
+        @Query('page') page?: number, 
+        @Query('limit') limit?: number
     ) {
-        return this.postsservice.getFollowingPosts(user.id, page, limit);
+        return this.postsservice.getFollowingPosts(user.id, parseInt(page as any), parseInt(limit as any));
     }
 
     @Get(':id')
