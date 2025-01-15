@@ -24,6 +24,15 @@ async function bootstrap() {
     res.send('Hello World!');
   });
 
-  await app.listen(process.env.PORT ?? 4496);
+  app.enableCors({
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000', 
+    credentials: true, 
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Accept', 'Authorization'],
+  }); //
+
+  app.use(cookieParser()); //
+
+  await app.listen(process.env.PORT ?? 4500);
 }
 bootstrap();
