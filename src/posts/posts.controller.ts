@@ -36,6 +36,11 @@ export class PostsController {
         }
     }
 
+    @Get()
+    GetPersonalPosts(@Auth() user: User) {
+        return this.postsservice.getPersonalPosts(user.id);
+    }
+
     @Get('explore')
     getExplorePosts(
         @Query('page', new ParseIntPipe()) page: number, 
