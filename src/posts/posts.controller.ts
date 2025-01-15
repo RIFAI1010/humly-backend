@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Query, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Query, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreateCommentDto, CreatePostDto } from './dto';
 import { User } from '@prisma/client';
@@ -37,12 +37,19 @@ export class PostsController {
     }
 
     @Get('explore')
-    getExplorePosts(@Query('page') page: number, @Query('limit') limit: number) {
+    getExplorePosts(
+        @Query('page', new ParseIntPipe()) page: number, 
+        @Query('limit', new ParseIntPipe()) limit: number
+    ) {
         return this.postsservice.getExplorePosts(page, limit);
     }
 
     @Get('following')
-    getFollowingPosts(@Auth() user: User, @Query('page') page: number, @Query('limit') limit: number) {
+    getFollowingPosts(
+        @Auth() user: User,
+        @Query('page', new ParseIntPipe()) page: number, 
+        @Query('limit', new ParseIntPipe()) limit: number
+    ) {
         return this.postsservice.getFollowingPosts(user.id, page, limit);
     }
 

@@ -43,8 +43,8 @@ export class PostsService {
         limit = limit || 10;
         const posts = await this.prisma.post.findMany({
             where: { status: 'public' },
-            skip: (page - 1) * limit,  // Pagination skip
-            take: limit,  // Limit jumlah posts
+            skip: (page - 1) * limit, 
+            take: limit,
             include: {
                 user: {
                     select: {
