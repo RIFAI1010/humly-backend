@@ -18,17 +18,17 @@ export class PostsService {
                         userId,
                         content,
                         status: 'public',
+                        images: {
+                            create: images.map((image: string) => ({
+                                image,
+                            })),
+                        },
+                    },
+                    include: {
+                        user: true,  // Menyertakan data user yang membuat post
+                        images: true, // Menyertakan data gambar yang terkait dengan post
                     },
                 });
-
-                if (images && images.length > 0) {
-                    await prisma.postImage.createMany({
-                        data: images.map((image: string) => ({
-                            postId: post.id,
-                            image,
-                        })),
-                    });
-                }
 
                 return post;
             });
