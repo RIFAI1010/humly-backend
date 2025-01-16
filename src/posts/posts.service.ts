@@ -38,6 +38,28 @@ export class PostsService {
         }
     }
 
+    async getPersonalPosts(userId: string) {
+        const posts = await this.prisma.post.findMany({
+            where: { userId },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        username: true,
+                    },
+                },
+                images: true,
+                _count: {
+                    select: {
+                        likes: true,
+                        comments: true
+                    }
+                }
+            },
+        });
+        return posts;
+    }
+
     async getExplorePosts(page: number, limit: number) {
         page = page || 1;
         limit = limit || 10;
@@ -270,6 +292,8 @@ export class PostsService {
                 }
             }
         })
+
+        return comments;
     }
 
     async getReplies(userId: string, commentId: string) {
