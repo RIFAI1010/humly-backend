@@ -11,13 +11,13 @@ export class PostsService {
     async createPost(userId: string, data: CreatePostDto) {
         try {
             return await this.prisma.$transaction(async (prisma) => {
-                const { content, status, images } = data;
+                const { content, images } = data;
 
                 const post = await prisma.post.create({
                     data: {
                         userId,
                         content,
-                        status: status as StatusPost,
+                        status: 'public',
                     },
                 });
 

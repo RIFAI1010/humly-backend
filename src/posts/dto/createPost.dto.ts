@@ -5,10 +5,10 @@ export class CreatePostDto {
     @IsString()
     content: string;
 
-    @IsString()
-    @IsNotEmpty()
-    @IsIn(['public', 'archive'])
-    status: string;
+    // @IsString()
+    // @IsNotEmpty()
+    // @IsIn(['public', 'archive'])
+    // status: string;
     
     // @IsArray()
     @IsOptional()
