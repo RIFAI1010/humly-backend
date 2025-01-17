@@ -55,10 +55,9 @@ export class UsersService {
             where: { id: userId },
             data: {
                 username: data.username,
-                email: data.email,
                 userDetails: {
                     update: {
-                        name: data.username,
+                        name: data.name,
                         bio: data.bio,
                     }
                 }

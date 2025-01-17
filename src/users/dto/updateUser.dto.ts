@@ -4,11 +4,8 @@ export class UpdateUserDto {
     @IsNotEmpty()
     username: string;
 
-    @IsEmail()
-    email: string;
-
-    @MinLength(6)
-    password: string;
+    @IsNotEmpty()
+    name: string;
 
     @IsOptional()
     bio: string;
