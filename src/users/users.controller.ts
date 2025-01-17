@@ -10,7 +10,7 @@ import { UpdateUserDto } from './dto';
 export class UsersController {
     constructor(private readonly usersService: UsersService) { }
 
-    @Get('profile')
+    @Get()
     getProfile(@Auth() user: User) {
         // // return this.usersService.getProfile(userId);
         // if (!user || !user.id) {
@@ -19,12 +19,12 @@ export class UsersController {
         return this.usersService.getMyProfile(user.id);
     }
 
-    @Get('user/:id')
+    @Get(':id')
     getUser(@Auth() user: User, @Param('id') id: string) {
         return this.usersService.getProfile(user.id, id);
     }
     
-    @Put('/user')
+    @Put()
     editProfile(@Auth() user: User, @Body() data: UpdateUserDto) {
         return this.usersService.editProfile(user.id, data);
     }

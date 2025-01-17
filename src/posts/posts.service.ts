@@ -12,7 +12,6 @@
             try {
                 return await this.prisma.$transaction(async (prisma) => {
                     const { content, images } = data;
-
                     const post = await prisma.post.create({
                         data: {
                             userId,
@@ -25,28 +24,34 @@
                             },
                         },
                         include: {
-                            user: true,  // Menyertakan data user yang membuat post
-                            images: true, // Menyertakan data gambar yang terkait dengan post
+                            user: true,
+                            images: true,
                         },
                     });
 
                     return post;
                 });
             } catch (error) {
-                // Re-throw error untuk ditangani di controller
                 throw error;
             }
         }
 
-        async getPersonalPosts(userId: string) {
+        async getPersonalPosts(userId: string, page: number, limit: number) {
             const posts = await this.prisma.post.findMany({
                 where: { userId },
+                skip: (page - 1) * limit, 
+                take: limit,
                 include: {
                     user: {
                         select: {
                             id: true,
                             username: true,
                         },
+                    },
+                    likes: {
+                        select: {
+                            userId: true
+                        }
                     },
                     images: true,
                     _count: {
@@ -61,39 +66,43 @@
                 ...post,
                 likesCount: post._count.likes,
                 commentsCount: post._count.comments,
+                isLiked: post.likes.some(like => like.userId === userId)
             }));
         }
 
-    async getLikedPosts(userId: string) {
-        const likedPosts = await this.prisma.like.findMany({
-            where: {
-                userId: userId,
-            },
+    async getLikedPosts(userId: string, page: number, limit: number) {
+        page = page || 1;
+        limit = limit || 10;
+        const posts = await this.prisma.post.findMany({
+            where: { likes: { some: { userId } }, status: 'public' },
+            skip: (page - 1) * limit, 
+            take: limit,
             include: {
-                post: {
-                    include: {
-                        user: {
-                            select: {
-                                id: true,
-                                username: true,
-                            },
-                        },
-                        images: true,
-                        _count: {
-                            select: {
-                                likes: true,
-                                comments: true
-                            }
-                        }
+                user: {
+                    select: {
+                        id: true,
+                        username: true,
+                    },
+                },
+                likes: {
+                    select: {
+                        userId: true
+                    }
+                },
+                images: true,
+                _count: {
+                    select: {
+                        likes: true,
+                        comments: true
                     }
                 }
-            }
+            },
         });
-
-        return likedPosts.map(liked => ({
-            ...liked.post,
-            likesCount: liked.post._count.likes,
-            commentsCount: liked.post._count.comments,
+        return posts.map(post => ({
+            ...post,
+            likesCount: post._count.likes,
+            commentsCount: post._count.comments,
+            isLiked: post.likes.some(like => like.userId === userId)
         }));
     }
 
@@ -164,6 +173,11 @@
                             username: true,
                         },
                     },
+                    likes: {
+                        select: {
+                            userId: true
+                        }
+                    },
                     images: true,
                     _count: {
                         select: {
@@ -177,6 +191,7 @@
                 ...post,
                 likesCount: post._count.likes,
                 commentsCount: post._count.comments,
+                isLiked: post.likes.some(like => like.userId === userId)
             }));
         }
 
@@ -190,6 +205,11 @@
                             username: true,
                             userDetails: true
                         },
+                    },
+                    likes: {
+                        select: {
+                            userId: true
+                        }
                     },
                     images: true,
                     _count: {
@@ -221,6 +241,8 @@
                 ...post,
                 likesCount: post._count.likes,
                 commentsCount: post._count.comments,
+                isLiked: post.likes.some(like => like.userId === userId)
+
             };
         }
 
@@ -236,6 +258,11 @@
                             userDetails: true
                         },
                     },
+                    likes: {
+                        select: {
+                            userId: true
+                        }
+                    },
                     images: true,
                     _count: {
                         select: {
@@ -250,6 +277,7 @@
                 ...post,
                 likesCount: post._count.likes,
                 commentsCount: post._count.comments,
+                isLiked: post.likes.some(like => like.userId === userId)
             }));
         }
 

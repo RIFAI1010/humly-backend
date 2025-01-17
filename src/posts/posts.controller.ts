@@ -37,19 +37,27 @@ export class PostsController {
     }
 
     @Get()
-    GetPersonalPosts(@Auth() user: User) {
-        return this.postsservice.getPersonalPosts(user.id);
+    GetPersonalPosts(
+        @Auth() user: User,
+        @Query('page') page?: number,
+        @Query('limit') limit?: number
+    ) {
+        return this.postsservice.getPersonalPosts(user.id, parseInt(page as any), parseInt(limit as any));
     }
 
     @Get('liked')
-    GetLikedPosts(@Auth() user: User) {
-        return this.postsservice.getLikedPosts(user.id);
+    GetLikedPosts(
+        @Auth() user: User,
+        @Query('page') page?: number,
+        @Query('limit') limit?: number
+    ) {
+        return this.postsservice.getLikedPosts(user.id, parseInt(page as any), parseInt(limit as any));
     }
 
     @Get('explore')
     getExplorePosts(
         @Auth() user: User,
-        @Query('page') page?: number, 
+        @Query('page') page?: number,
         @Query('limit') limit?: number
     ) {
         return this.postsservice.getExplorePosts(user.id, parseInt(page as any), parseInt(limit as any));
@@ -58,7 +66,7 @@ export class PostsController {
     @Get('following')
     getFollowingPosts(
         @Auth() user: User,
-        @Query('page') page?: number, 
+        @Query('page') page?: number,
         @Query('limit') limit?: number
     ) {
         return this.postsservice.getFollowingPosts(user.id, parseInt(page as any), parseInt(limit as any));
@@ -73,8 +81,6 @@ export class PostsController {
     getUserPosts(@Auth() user: User, @Param('id') id: string) {
         return this.postsservice.getUserPosts(user.id, id);
     }
-
-
 
     @Post(':id/like')
     likePost(@Auth() user: User, @Param('id') postId: string) {
