@@ -43,6 +43,29 @@ export class UsersService {
         return user;
     }
 
+    
+    async editProfile(userId: string, data: { username?: string, email?: string, name?: string, bio?: string }) {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+        });
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+        return this.prisma.user.update({
+            where: { id: userId },
+            data: {
+                username: data.username,
+                email: data.email,
+                userDetails: {
+                    update: {
+                        name: data.name,
+                        bio: data.bio,
+                    }
+                }
+            }
+        });
+    }
+
     search(term: string) {
         return this.prisma.user.findMany({
             where: { username: { contains: term } },
