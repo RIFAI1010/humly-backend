@@ -21,7 +21,7 @@ export class PostsController {
     ) {
         const imagePaths = files.map((file) => ({
             filename: file.filename,
-            path: `${multerConfig.dest}/${file.filename}`,
+            path: `${multerConfig.dest.replace('./', '')}/${file.filename}`,
             originalPath: file.path
         }));
 

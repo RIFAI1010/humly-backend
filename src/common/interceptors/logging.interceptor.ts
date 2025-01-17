@@ -26,6 +26,7 @@ export class LoggingInterceptor implements NestInterceptor {
                 error: (error) => {
                     this.logger.error(
                         `${method} ${url} - ${Date.now() - now}ms\n` +
+                        `Request Body: ${JSON.stringify(req.body)}\n` +
                         `Error: ${error.message}\n` +
                         `Stack: ${error.stack}`
                     );

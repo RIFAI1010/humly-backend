@@ -37,6 +37,8 @@
         }
 
         async getPersonalPosts(userId: string, page: number, limit: number) {
+            page = page || 1;
+            limit = limit || 100;
             const posts = await this.prisma.post.findMany({
                 where: { userId },
                 skip: (page - 1) * limit, 
@@ -61,6 +63,9 @@
                         }
                     }
                 },
+                orderBy: {
+                    createdAt: 'desc',
+                }
             });
             return posts.map(post => ({
                 ...post,
@@ -72,7 +77,7 @@
 
     async getLikedPosts(userId: string, page: number, limit: number) {
         page = page || 1;
-        limit = limit || 10;
+        limit = limit || 100;
         const posts = await this.prisma.post.findMany({
             where: { likes: { some: { userId } }, status: 'public' },
             skip: (page - 1) * limit, 
@@ -97,6 +102,9 @@
                     }
                 }
             },
+            orderBy: {
+                createdAt: 'desc',
+            }
         });
         return posts.map(post => ({
             ...post,
@@ -108,7 +116,7 @@
 
         async getExplorePosts(userId: string, page: number, limit: number) {
             page = page || 1;
-            limit = limit || 10;
+            limit = limit || 100;
             const posts = await this.prisma.post.findMany({
                 where: { status: 'public' },
                 skip: (page - 1) * limit, 
@@ -147,7 +155,7 @@
 
         async getFollowingPosts(userId: string, page: number, limit: number) {
             page = page || 1;
-            limit = limit || 10;
+            limit = limit || 100;
             const followedIds = await this.prisma.follow
                 .findMany({
                     where: { followerId: userId },
@@ -186,6 +194,9 @@
                         }
                     }
                 },
+                orderBy: {
+                    createdAt: 'desc',
+                }
             });
             return posts.map(post => ({
                 ...post,
@@ -271,6 +282,9 @@
                         }
                     }
                 },
+                orderBy: {
+                    createdAt: 'desc',
+                }
             });
 
             return posts.map(post => ({

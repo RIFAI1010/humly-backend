@@ -6,7 +6,7 @@ import { existsSync, mkdirSync } from 'fs';
 import { unlink } from 'fs/promises';
 
 export const multerConfig = {
-    dest: './uploads/posts', // Folder tujuan penyimpanan file
+    dest: './uploads/posts',
 };
 
 if (!existsSync(multerConfig.dest)) {
