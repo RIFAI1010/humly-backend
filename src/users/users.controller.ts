@@ -22,7 +22,6 @@ export class UsersController {
     getUser(@Auth() user: User, @Param('id') id: string) {
         return this.usersService.getProfile(user.id, id);
     }
-
     
     @Put('/edit')
     editProfile(@Auth() user: User, @Req() req: Request) {

@@ -44,6 +44,8 @@ export class UsersService {
     }
 
     
+
+    
     async editProfile(userId: string, data: { username?: string, email?: string, name?: string, bio?: string }) {
         const user = await this.prisma.user.findUnique({
             where: { id: userId },
