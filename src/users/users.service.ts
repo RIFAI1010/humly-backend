@@ -1,5 +1,6 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { UpdateUserDto } from './dto';
 
 @Injectable()
 export class UsersService {
@@ -43,10 +44,7 @@ export class UsersService {
         return user;
     }
 
-    
-
-    
-    async editProfile(userId: string, data: { username?: string, email?: string, name?: string, bio?: string }) {
+    async editProfile(userId: string, data: UpdateUserDto) {
         const user = await this.prisma.user.findUnique({
             where: { id: userId },
         });
@@ -60,7 +58,7 @@ export class UsersService {
                 email: data.email,
                 userDetails: {
                     update: {
-                        name: data.name,
+                        name: data.username,
                         bio: data.bio,
                     }
                 }
