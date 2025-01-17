@@ -51,7 +51,7 @@ export class UsersService {
         if (!user) {
             throw new NotFoundException('User not found');
         }
-        return this.prisma.user.update({
+        await this.prisma.user.update({
             where: { id: userId },
             data: {
                 username: data.username,
@@ -63,6 +63,15 @@ export class UsersService {
                     }
                 }
             }
+        });
+        return this.prisma.user.findUnique({
+            where: { id: userId },
+            select: { 
+                id: true,
+                username: true,
+                email: true,
+                userDetails: true
+            },
         });
     }
 

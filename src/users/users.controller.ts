@@ -24,7 +24,7 @@ export class UsersController {
         return this.usersService.getProfile(user.id, id);
     }
     
-    @Put('/edit')
+    @Put('/user')
     editProfile(@Auth() user: User, @Body() data: UpdateUserDto) {
         return this.usersService.editProfile(user.id, data);
     }
