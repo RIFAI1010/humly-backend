@@ -11,6 +11,7 @@ import { log } from 'console';
 export class AuthService {
     constructor(private readonly prisma: PrismaService) { }
 
+
     async register(data: RegisterDto) {
         const existingUser = await this.prisma.user.findFirst({
             where: {

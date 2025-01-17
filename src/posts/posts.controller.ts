@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Query, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreateCommentDto, CreatePostDto } from './dto';
 import { User } from '@prisma/client';
@@ -41,12 +41,18 @@ export class PostsController {
         return this.postsservice.getPersonalPosts(user.id);
     }
 
+    @Get('liked')
+    GetLikedPosts(@Auth() user: User) {
+        return this.postsservice.getLikedPosts(user.id);
+    }
+
     @Get('explore')
     getExplorePosts(
+        @Auth() user: User,
         @Query('page') page?: number, 
         @Query('limit') limit?: number
     ) {
-        return this.postsservice.getExplorePosts(parseInt(page as any), parseInt(limit as any));
+        return this.postsservice.getExplorePosts(user.id, parseInt(page as any), parseInt(limit as any));
     }
 
     @Get('following')
@@ -67,6 +73,8 @@ export class PostsController {
     getUserPosts(@Auth() user: User, @Param('id') id: string) {
         return this.postsservice.getUserPosts(user.id, id);
     }
+
+
 
     @Post(':id/like')
     likePost(@Auth() user: User, @Param('id') postId: string) {
