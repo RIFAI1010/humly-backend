@@ -45,6 +45,11 @@ export class PostsController {
         return this.postsservice.getPersonalPosts(user.id, parseInt(page as any), parseInt(limit as any));
     }
 
+    @Delete(':id')
+    deletePersonalPosts(@Auth() user: User, @Param('id') id: string) {
+        return this.postsservice.deletePersonalPosts(user.id, id);
+    }
+
     @Get('liked')
     GetLikedPosts(
         @Auth() user: User,
