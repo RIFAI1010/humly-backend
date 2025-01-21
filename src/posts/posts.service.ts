@@ -75,36 +75,36 @@ export class PostsService {
             isLiked: post.likes.some(like => like.userId === userId)
         }));
     }
-    
+
     async deletePersonalPosts(userId: string, postId: string) {
         const post = await this.prisma.post.findFirst({
-          where: { id: postId, userId },
+            where: { id: postId, userId },
         });
-      
+
         if (!post) {
-          throw new NotFoundException('Post not found');
+            throw new NotFoundException('Post not found');
         }
-      
-        await this.prisma.image.deleteMany({
-          where: { postId },
+
+        await this.prisma.postImage.deleteMany({
+            where: { postId },
         });
-      
+
         await this.prisma.comment.deleteMany({
-          where: { postId },
+            where: { postId },
         });
-      
+
         await this.prisma.like.deleteMany({
-          where: { postId },
+            where: { postId },
         });
-      
+
         // Hapus post itu sendiri
         await this.prisma.post.delete({
-          where: { id: postId },
+            where: { id: postId },
         });
-      
+
         return { message: 'Post deleted successfully' };
-      }
-      
+    }
+
 
     async getLikedPosts(userId: string, page: number, limit: number) {
         page = page || 1;
