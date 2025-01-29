@@ -76,6 +76,8 @@ export class PostsService {
         }));
     }
 
+
+
     async deletePersonalPosts(userId: string, postId: string) {
         const post = await this.prisma.post.findFirst({
             where: { id: postId, userId },
@@ -97,7 +99,6 @@ export class PostsService {
             where: { postId },
         });
 
-        // Hapus post itu sendiri
         await this.prisma.post.delete({
             where: { id: postId },
         });
@@ -105,6 +106,34 @@ export class PostsService {
         return { message: 'Post deleted successfully' };
     }
 
+    async editPersonalPosts(userId: string, data: CreatePostDto, files: Express.Multer.File[], postId: string) {
+        const post = await this.prisma.post.findFirst({
+            where: { id: postId, userId },
+        });
+
+        if (!post) {
+            throw new NotFoundException('Post not found');
+        }
+
+        if (files.length > 0) {
+            const images = files.map(file => ({ image: file.filename }));
+            await this.prisma.postImage.deleteMany({
+                where: { postId },
+            });
+            await this.prisma.postImage.createMany({
+                data: images.map(image => ({ ...image, postId })),
+            });
+        }
+
+        await this.prisma.post.update({
+            where: { id: postId },
+            data: {
+                content: data.content,
+            },
+        });
+
+        return { message: 'Post edited successfully' };
+    }
 
     async getLikedPosts(userId: string, page: number, limit: number) {
         page = page || 1;

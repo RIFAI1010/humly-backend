@@ -33,4 +33,6 @@ export class UsersController {
     search(@Param('term') term: string) {
         return this.usersService.search(term);
     }
+
+    
 }

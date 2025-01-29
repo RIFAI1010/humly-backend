@@ -50,6 +50,16 @@ export class PostsController {
         return this.postsservice.deletePersonalPosts(user.id, id);
     }
 
+    @Put(':id')
+    editPersonalPosts (
+        @Auth() user: User,
+        @Body() data: CreatePostDto,
+        @UploadedFiles() files: Express.Multer.File[],
+        @Param('id') id: string
+    ) {
+        return this.postsservice.editPersonalPosts(user.id, data, files, id);
+    }
+
     @Get('liked')
     GetLikedPosts(
         @Auth() user: User,
