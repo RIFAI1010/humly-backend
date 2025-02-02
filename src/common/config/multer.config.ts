@@ -6,7 +6,8 @@ import { existsSync, mkdirSync } from 'fs';
 import { unlink } from 'fs/promises';
 
 export const multerConfig = {
-    dest: './uploads/posts',
+    dest: './uploads',
+    path: 'uploads',
 };
 
 if (!existsSync(multerConfig.dest)) {
@@ -34,6 +35,17 @@ export const multerOptions = {
         }
     },
     limits: {
-        fileSize: 5 * 1024 * 1024, // Maksimum ukuran file 5MB
+        fileSize: 5 * 1024 * 1024,
     },
+};
+
+
+export const removeFiles = async (filePaths: string[]) => {
+    try {
+        for (const filePath of filePaths) {
+            await unlink(filePath);
+        }
+    } catch (error) {
+        console.error('Error removing files:', error);
+    }
 };

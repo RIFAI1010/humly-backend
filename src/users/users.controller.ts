@@ -1,10 +1,13 @@
-import { Body, Controller, Get, Param, Put, Req, UnauthorizedException } from '@nestjs/common';
+import { Body, Controller, Get, Param, Put, Req, UnauthorizedException, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { Request } from 'express';
 // import { User } from 'src/common/decorators/user.decorator';
 import { User } from '@prisma/client';
 import { Auth } from 'src/common/decorators/user.decorator';
 import { UpdateUserDto } from './dto';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { multerConfig, multerOptions } from 'src/common/config/multer.config';
+import { FileCleanupInterceptor } from 'src/common/interceptors/file-cleanup.middleware';
 
 @Controller('users')
 export class UsersController {
@@ -23,10 +26,31 @@ export class UsersController {
     getUser(@Auth() user: User, @Param('id') id: string) {
         return this.usersService.getProfile(user.id, id);
     }
-    
+
     @Put()
-    editProfile(@Auth() user: User, @Body() data: UpdateUserDto) {
-        return this.usersService.editProfile(user.id, data);
+    @UseInterceptors(FilesInterceptor('profileImage', 1, multerOptions), FileCleanupInterceptor)
+    async editProfile(
+        @Auth() user: User,
+        @Body() data: UpdateUserDto,
+        @UploadedFiles() files: Express.Multer.File,
+    ) {
+        console.log('iamge path: ', files);
+        const imagePaths = files && files[0] ? {
+            filename: files[0].filename,
+            path: `${multerConfig.path}/${files[0].filename}`,
+            originalPath: files[0].path
+        } : null;
+
+        try {
+            console.log('iamge path profile: ', imagePaths);
+            const result = await this.usersService.editProfile(user.id, {
+                ...data,
+                profileImage: imagePaths && imagePaths.path
+            });
+            return result;
+        } catch (error) {
+            throw error;
+        }
     }
 
     @Get('search/:term')
@@ -34,5 +58,5 @@ export class UsersController {
         return this.usersService.search(term);
     }
 
-    
+
 }

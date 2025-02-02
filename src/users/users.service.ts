@@ -1,6 +1,7 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateUserDto } from './dto';
+import { removeFiles } from 'src/common/config/multer.config';
 
 @Injectable()
 export class UsersService {
@@ -47,10 +48,15 @@ export class UsersService {
     async editProfile(userId: string, data: UpdateUserDto) {
         const user = await this.prisma.user.findUnique({
             where: { id: userId },
+            include: { userDetails: true },
         });
         if (!user) {
             throw new NotFoundException('User not found');
         }
+        if (user.userDetails.image && data.profileImage) {
+            await removeFiles([user.userDetails.image]);
+        }
+        
         await this.prisma.user.update({
             where: { id: userId },
             data: {
@@ -59,6 +65,7 @@ export class UsersService {
                     update: {
                         name: data.name,
                         bio: data.bio,
+                        image: data.profileImage || user.userDetails.image
                     }
                 }
             }

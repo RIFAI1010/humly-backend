@@ -21,7 +21,7 @@ export class PostsController {
     ) {
         const imagePaths = files.map((file) => ({
             filename: file.filename,
-            path: `${multerConfig.dest.replace('./', '')}/${file.filename}`,
+            path: `${multerConfig.path}/${file.filename}`,
             originalPath: file.path
         }));
 
@@ -51,13 +51,12 @@ export class PostsController {
     }
 
     @Put(':id')
-    editPersonalPosts (
+    editPersonalPosts(
         @Auth() user: User,
         @Body() data: CreatePostDto,
-        @UploadedFiles() files: Express.Multer.File[],
         @Param('id') id: string
     ) {
-        return this.postsservice.editPersonalPosts(user.id, data, files, id);
+        return this.postsservice.editPersonalPosts(user.id, id, data);
     }
 
     @Get('liked')
