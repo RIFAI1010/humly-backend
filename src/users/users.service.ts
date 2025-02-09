@@ -49,14 +49,22 @@ export class UsersService {
         const user = await this.prisma.user.findUnique({
             where: { id: userId },
             include: { userDetails: true },
-        });
+        })
         if (!user) {
             throw new NotFoundException('User not found');
+        }
+        const username = await this.prisma.user.findFirst({
+            where: {
+                username: data.username,
+                NOT: { id: userId },
+            }
+        })
+        if (username) {
+            throw new BadRequestException('Username is already taken');
         }
         if (user.userDetails.image && data.profileImage) {
             await removeFiles([user.userDetails.image]);
         }
-        
         await this.prisma.user.update({
             where: { id: userId },
             data: {

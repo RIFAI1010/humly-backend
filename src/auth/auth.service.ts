@@ -46,7 +46,7 @@ export class AuthService {
         })
         console.log(user);
         if (!user || !(await bcrypt.compare(data.password, user.password))) {
-            throw new UnauthorizedException('Invalid credentials');
+            throw new UnauthorizedException('invalid username or password');
         }
         const payload = { id: user.id, email: user.email, username: user.username, role: user.role };
         const accessToken = generateAccessToken(payload);

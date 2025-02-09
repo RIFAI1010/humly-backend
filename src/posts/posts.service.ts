@@ -48,6 +48,7 @@ export class PostsService {
                     select: {
                         id: true,
                         username: true,
+                        userDetails: true
                     },
                 },
                 likes: {
@@ -137,6 +138,7 @@ export class PostsService {
                     select: {
                         id: true,
                         username: true,
+                        userDetails: true
                     },
                 },
                 likes: {
@@ -176,6 +178,7 @@ export class PostsService {
                     select: {
                         id: true,
                         username: true,
+                        userDetails: true
                     },
                 },
                 images: true,
@@ -229,6 +232,7 @@ export class PostsService {
                     select: {
                         id: true,
                         username: true,
+                        userDetails: true
                     },
                 },
                 likes: {
