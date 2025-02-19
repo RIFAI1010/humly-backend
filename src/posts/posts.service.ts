@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException, Injectable, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCommentDto, CreatePostDto } from './dto';
 import { StatusPost } from '@prisma/client';
@@ -37,7 +37,7 @@ export class PostsService {
 
                 return {
                     ...post,
-                   
+
                     isOwner: post.userId === userId,
                 }
             });
@@ -97,6 +97,10 @@ export class PostsService {
         if (!post) {
             throw new NotFoundException('Post not found');
         }
+
+        await this.prisma.report.deleteMany({
+            where: { postId: postId },
+        })
 
         await this.prisma.postImage.deleteMany({
             where: { postId },
@@ -313,7 +317,7 @@ export class PostsService {
             throw new NotFoundException('Post not found');
         }
         if (post.status === 'archive' && userId !== post.userId) {
-            throw new ForbiddenException('Post Is Archive');
+            throw new NotFoundException('Post Is Archive');
         }
         if (post.user.userDetails.status === 'private' && userId !== post.userId) {
             const follow = await this.prisma.follow.findFirst({
@@ -323,7 +327,7 @@ export class PostsService {
                 }
             })
             if (!follow) {
-                throw new ForbiddenException('User is Private');
+                throw new NotFoundException('User is Private');
             }
         }
         return {
@@ -543,5 +547,113 @@ export class PostsService {
                 },
             }
         })
+    }
+
+    async reportPost(userId: string, postId: string) {
+        const report = await this.prisma.report.findFirst({
+            where: {
+                userId: userId,
+                postId: postId,
+            },
+        })
+
+        if (report) {
+            throw new BadRequestException('Post already reported');
+        }
+
+        await this.prisma.report.create({
+            data: {
+                userId: userId,
+                postId: postId,
+            },
+        });
+
+        return { message: 'Post reported successfully' };
+
+    }
+
+    async getReportedPosts(userId: string) {
+
+        const user = await this.prisma.user.findFirst({
+            where: {
+                id: userId
+            }
+        });
+
+        if (user.role !== 'Admin') {
+            throw new ForbiddenException('Only admin can view reported posts');
+        }
+
+        const reports = await this.prisma.report.findMany({
+            include: {
+                post: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                username: true,
+                                userDetails: {
+                                    select: {
+                                        name: true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    
+        // Hitung jumlah report per post
+        const reportSummary = reports.reduce((acc, report) => {
+            const { post } = report;
+            if (!post) return acc; // Jika post null, skip
+    
+            const key = post.id;
+            if (!acc[key]) {
+                acc[key] = {
+                    postId: post.id,
+                    jumlahReport: 0,
+                    content: post.content,
+                    userName: post.user?.userDetails?.name || post.user?.username || "Unknown"
+                };
+            }
+            acc[key].jumlahReport++;
+            return acc;
+        }, {} as Record<string, {postId: string, jumlahReport: number, content: string, userName: string }>);
+    
+        // Konversi hasil ke array
+        return Object.values(reportSummary);
+    }
+    
+    async deleteReportPost(userId: string, postId: string) {
+        const report = await this.prisma.report.findFirst({
+            where: {
+                postId: postId,
+            },
+        });
+
+        if (!report) {
+            throw new NotFoundException('Post not found');
+        }
+
+        await this.prisma.report.deleteMany({
+            where: { postId: postId },
+        })
+        await this.prisma.postImage.deleteMany({
+            where: { postId },
+        });
+
+        await this.prisma.comment.deleteMany({
+            where: { postId },
+        });
+
+        await this.prisma.like.deleteMany({
+            where: { postId },
+        });
+
+        await this.prisma.post.delete({
+            where: { id: postId },
+        });
     }
 }

@@ -90,6 +90,11 @@ export class PostsController {
         return this.postsservice.getFollowingPosts(user.id, parseInt(page as any), parseInt(limit as any));
     }
 
+    @Get('report')
+    getReportedPosts(@Auth() user: User) {
+        return this.postsservice.getReportedPosts(user.id);
+    }
+
     @Get(':id')
     getPost(@Auth() user: User, @Param('id') id: string) {
         return this.postsservice.getPost(user.id, id);
@@ -129,4 +134,14 @@ export class PostsController {
     getReplies(@Auth() user: User, @Param('comment_id') commentId: string) {
         return this.postsservice.getReplies(user.id, commentId);
     }
+    @Post(':id/report')
+    reportPost(@Auth() user: User, @Param('id') postId: string) {
+        return this.postsservice.reportPost(user.id, postId);
+    }
+
+    @Delete(':id/report')
+    deleteReportPost(@Auth() user: User, @Param('id') postId: string) {
+        return this.postsservice.deleteReportPost(user.id, postId);
+    }
+    
 }

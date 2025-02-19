@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateUserDto } from './dto';
 import { removeFiles } from 'src/common/config/multer.config';
@@ -66,7 +66,7 @@ export class UsersService {
                 }
             })
             if (!follow) {
-                throw new ForbiddenException('User is Private');
+                throw new NotFoundException('User is Private');
             }
         }
 
