@@ -2,6 +2,8 @@ import { Body, Controller, Post, Req, Res, UnauthorizedException } from '@nestjs
 import { AuthService } from './auth.service';
 import { RegisterDto, LoginDto } from './dto';
 import { Request, Response } from 'express';
+import { Auth } from 'src/common/decorators/user.decorator';
+import { User } from '@prisma/client';
 
 
 @Controller('auth')
@@ -39,5 +41,11 @@ export class AuthController {
     }
 
     return this.authService.refresh(refreshToken);
+  }
+
+  @Post('logout')
+  logout(@Auth() user: User, @Res({ passthrough: true }) res: Response) {
+    res.clearCookie('refreshToken');
+    return this.authService.logout(user);
   }
 }
