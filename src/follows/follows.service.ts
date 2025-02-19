@@ -7,6 +7,9 @@ export class FollowsService {
     constructor(private readonly prisma: PrismaService) { }
 
     async follow(followerId: string, followedId: string) {
+        if (followerId === followedId) {
+            throw new BadRequestException('You cannot follow yourself');
+        }
         const follow = await this.prisma.follow.findUnique({
             where: {
                 followerId_followedId: {
@@ -28,6 +31,9 @@ export class FollowsService {
     }
 
     async unFollow(followerId: string, followedId: string) {
+        if (followerId === followedId) {
+            throw new BadRequestException('You cannot unfollow yourself');
+        }
         const follow = await this.prisma.follow.findUnique({
             where: {
                 followerId_followedId: {

@@ -99,6 +99,10 @@ export class PostsController {
     getUserPosts(@Auth() user: User, @Param('id') id: string) {
         return this.postsservice.getUserPosts(user.id, id);
     }
+    @Get(':id/liked')
+    getUserLikedPosts(@Auth() user: User, @Param('id') id: string) {
+        return this.postsservice.getUserLikedPosts(user.id, id);
+    }
 
     @Post(':id/like')
     likePost(@Auth() user: User, @Param('id') postId: string) {

@@ -374,6 +374,45 @@ export class PostsService {
         }));
     }
 
+    async getUserLikedPosts(userId: string, id: string) {
+        const user = await this.userService.getProfile(userId, id);
+        const posts = await this.prisma.post.findMany({
+            where: { likes: { some: { userId: id } }, status: 'public' },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        username: true,
+                        userDetails: true
+                    },
+                },
+                likes: {
+                    select: {
+                        userId: true
+                    }
+                },
+                images: true,
+                _count: {
+                    select: {
+                        likes: true,
+                        comments: true
+                    }
+                }
+            },
+            orderBy: {
+                createdAt: 'desc',
+            }
+        });
+
+        return posts.map(post => ({
+            ...post,
+            likesCount: post._count.likes,
+            commentsCount: post._count.comments,
+            isOwner: post.userId === userId,
+            isLiked: post.likes.some(like => like.userId === userId)
+        }));
+    }
+
     async likePost(userId: string, postId: string) {
         const post = await this.getPost(userId, postId);
         const like = await this.prisma.like.findFirst({

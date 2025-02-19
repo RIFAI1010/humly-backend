@@ -70,13 +70,22 @@ export class UsersService {
             }
         }
 
+        const isFollow = await this.prisma.follow.findFirst({
+            where: {
+                followerId: userId,
+                followedId: user.id,
+            }
+        })
+
         return {
             id: user.id,
             username: user.username,
             email: user.email,
             userDetails: user.userDetails,
             followerCount: user._count.follower,  // Mengubah menjadi followerCount
-            followingCount: user._count.following // Mengubah menjadi followingCount
+            followingCount: user._count.following, // Mengubah menjadi followingCount
+            isFollow: isFollow ? true : false,
+            isSelf: userId === user.id
         };
     }
 
@@ -125,9 +134,14 @@ export class UsersService {
     }
 
     // user.service.ts
-    search(id: any) {
+    search(term: string) {
         return this.prisma.user.findMany({
-            where: { id: id },
+            where: { 
+                username: { contains: term },
+                userDetails: {
+                    status: 'public'
+                }
+            },
             select: {
                 id: true,
                 username: true,
