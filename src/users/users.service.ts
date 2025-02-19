@@ -10,22 +10,49 @@ export class UsersService {
     async getMyProfile(userId: string) {
         const user = await this.prisma.user.findUnique({
             where: { id: userId },
-            select: { id: true, username: true, email: true, userDetails: true },
+            select: {
+                id: true,
+                username: true,
+                email: true,
+                userDetails: true,
+                _count: {
+                    select: {
+                        follower: true,  // Menghitung jumlah follower
+                        following: true  // Menghitung jumlah following
+                    }
+                }
+            },
         });
+
         if (!user) {
             throw new NotFoundException('User not found');
         }
-        return user;
+
+        return {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            userDetails: user.userDetails,
+            followerCount: user._count.follower,  // Mengubah menjadi followerCount
+            followingCount: user._count.following // Mengubah menjadi followingCount
+        };
     }
+
 
     async getProfile(userId: string, id: any) {
         const user = await this.prisma.user.findUnique({
             where: { id: id },
-            select: { 
+            select: {
                 id: true,
                 username: true,
                 email: true,
-                userDetails: true
+                userDetails: true,
+                _count: {
+                    select: {
+                        follower: true,  // Menghitung jumlah follower
+                        following: true  // Menghitung jumlah following
+                    }
+                }
             },
         });
         if (!user) {
@@ -42,7 +69,15 @@ export class UsersService {
                 throw new ForbiddenException('User is Private');
             }
         }
-        return user;
+
+        return {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            userDetails: user.userDetails,
+            followerCount: user._count.follower,  // Mengubah menjadi followerCount
+            followingCount: user._count.following // Mengubah menjadi followingCount
+        };
     }
 
     async editProfile(userId: string, data: UpdateUserDto) {
@@ -80,7 +115,7 @@ export class UsersService {
         });
         return this.prisma.user.findUnique({
             where: { id: userId },
-            select: { 
+            select: {
                 id: true,
                 username: true,
                 email: true,
@@ -89,9 +124,23 @@ export class UsersService {
         });
     }
 
-    search(term: string) {
+    // user.service.ts
+    search(id: any) {
         return this.prisma.user.findMany({
-            where: { username: { contains: term } },
+            where: { id: id },
+            select: {
+                id: true,
+                username: true,
+                email: true,
+                userDetails: true,
+                _count: {
+                    select: {
+                        follower: true, 
+                        following: true 
+                    }
+                }
+            },
         });
     }
+
 }

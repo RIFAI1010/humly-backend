@@ -24,12 +24,22 @@ export class PostsService {
                         },
                     },
                     include: {
-                        user: true,
+                        user: {
+                            select: {
+                                id: true,
+                                username: true,
+                                userDetails: true
+                            }
+                        },
                         images: true,
                     },
                 });
 
-                return post;
+                return {
+                    ...post,
+                   
+                    isOwner: post.userId === userId,
+                }
             });
         } catch (error) {
             throw error;
@@ -162,6 +172,7 @@ export class PostsService {
             ...post,
             likesCount: post._count.likes,
             commentsCount: post._count.comments,
+            isOwner: post.userId === userId,
             isLiked: post.likes.some(like => like.userId === userId)
         }));
     }
@@ -202,6 +213,7 @@ export class PostsService {
             ...post,
             likesCount: post._count.likes,
             commentsCount: post._count.comments,
+            isOwner: post.userId === userId,
             isLiked: post.likes.some(like => like.userId === userId)
         }));
     }
@@ -256,6 +268,7 @@ export class PostsService {
             ...post,
             likesCount: post._count.likes,
             commentsCount: post._count.comments,
+            isOwner: post.userId === userId,
             isLiked: post.likes.some(like => like.userId === userId)
         }));
     }
@@ -282,6 +295,17 @@ export class PostsService {
                         likes: true,
                         comments: true
                     }
+                },
+                comments: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                username: true,
+                                userDetails: true
+                            },
+                        },
+                    },
                 }
             },
         });
@@ -306,8 +330,8 @@ export class PostsService {
             ...post,
             likesCount: post._count.likes,
             commentsCount: post._count.comments,
+            isOwner: post.userId === userId,
             isLiked: post.likes.some(like => like.userId === userId)
-
         };
     }
 
@@ -345,6 +369,7 @@ export class PostsService {
             ...post,
             likesCount: post._count.likes,
             commentsCount: post._count.comments,
+            isOwner: post.userId === userId,
             isLiked: post.likes.some(like => like.userId === userId)
         }));
     }

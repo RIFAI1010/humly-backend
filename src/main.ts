@@ -30,9 +30,7 @@ async function bootstrap() {
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Accept', 'Authorization'],
   }); //
-
   app.use(cookieParser()); //
-
   await app.listen(process.env.PORT ?? 4500);
 }
 bootstrap();
