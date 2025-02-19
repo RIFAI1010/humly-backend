@@ -47,6 +47,15 @@ export class PostsController {
             parseInt(limit as any));
     }
 
+    @Get('archive')
+    getArchivePost(
+        @Auth() user: User,
+        @Query('page') page?: number,
+        @Query('limit') limit?: number
+    ) {
+        return this.postsservice.getArchivePost(user.id, parseInt(page as any), parseInt(limit as any));
+    }
+
     @Delete(':id')
     deletePersonalPosts(@Auth() user: User, @Param('id') id: string) {
         return this.postsservice.deletePersonalPosts(user.id, id);
@@ -142,6 +151,12 @@ export class PostsController {
     @Delete(':id/report')
     deleteReportPost(@Auth() user: User, @Param('id') postId: string) {
         return this.postsservice.deleteReportPost(user.id, postId);
+    }
+
+    @Post(':id/archive')
+    archivePost(@Auth() user: User, @Param('id') postId: string) {
+        return this.postsservice.archivePost(user.id, postId);
+
     }
     
 }

@@ -3,6 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCommentDto, CreatePostDto } from './dto';
 import { StatusPost } from '@prisma/client';
 import { UsersService } from 'src/users/users.service';
+import { arch } from 'os';
 
 @Injectable()
 export class PostsService {
@@ -50,7 +51,7 @@ export class PostsService {
         page = page || 1;
         limit = limit || 100;
         const posts = await this.prisma.post.findMany({
-            where: { userId },
+            where: { userId, status: 'public' },
             skip: (page - 1) * limit,
             take: limit,
             include: {
@@ -87,6 +88,47 @@ export class PostsService {
         }));
     }
 
+
+    async getArchivePost(userId: string, page: number, limit: number) {
+        page = page || 1;
+        limit = limit || 100;
+        const posts = await this.prisma.post.findMany({
+            where: { userId, status: 'archive' },
+            skip: (page - 1) * limit,
+            take: limit,
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        username: true,
+                        userDetails: true
+                    },
+                },
+                likes: {
+                    select: {
+                        userId: true
+                    }
+                },
+                images: true,
+                _count: {
+                    select: {
+                        likes: true,
+                        comments: true
+                    }
+                }
+            },
+            orderBy: {
+                createdAt: 'desc',
+            }
+        });
+        return posts.map(post => ({
+            ...post,
+            likesCount: post._count.likes,
+            commentsCount: post._count.comments,
+            isOwner: post.userId === userId,
+            isLiked: post.likes.some(like => like.userId === userId)
+        }));
+    }
 
 
     async deletePersonalPosts(userId: string, postId: string) {
@@ -655,5 +697,26 @@ export class PostsService {
         await this.prisma.post.delete({
             where: { id: postId },
         });
+    }
+
+    async archivePost(userId: string, postId: string) {
+        const post = await this.getPost(userId, postId);
+
+        if (post.userId !== userId) {
+            throw new NotFoundException('You are not the owner of this post');
+        }
+
+        const newStatus = post.status === 'public' ? 'archive' : 'public';
+
+        await this.prisma.post.update({
+            where: {
+                id: postId,
+            },
+            data: {
+                status: newStatus,
+            },
+        });
+
+        return { message: `Post ${newStatus === 'public' ? 'unarchived' : 'archived'} successfully` };
     }
 }
