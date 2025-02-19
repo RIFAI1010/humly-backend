@@ -42,7 +42,9 @@ export class PostsController {
         @Query('page') page?: number,
         @Query('limit') limit?: number
     ) {
-        return this.postsservice.getPersonalPosts(user.id, parseInt(page as any), parseInt(limit as any));
+        return this.postsservice.getPersonalPosts(
+            user.id, parseInt(page as any), 
+            parseInt(limit as any));
     }
 
     @Delete(':id')
@@ -65,7 +67,9 @@ export class PostsController {
         @Query('page') page?: number,
         @Query('limit') limit?: number
     ) {
-        return this.postsservice.getLikedPosts(user.id, parseInt(page as any), parseInt(limit as any));
+        return this.postsservice.getLikedPosts(user.id, 
+            parseInt(page as any), 
+            parseInt(limit as any));
     }
 
     @Get('explore')
@@ -107,7 +111,8 @@ export class PostsController {
     }
 
     @Post('comment')
-    createComment(@Auth() user: User, @Body() data: CreateCommentDto) {
+    createComment(@Auth() user: User, @Body() 
+    data: CreateCommentDto) {
         return this.postsservice.createComment(user.id, data);
     }
 

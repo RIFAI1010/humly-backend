@@ -8,6 +8,7 @@ import { UpdateUserDto } from './dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { multerConfig, multerOptions } from 'src/common/config/multer.config';
 import { FileCleanupInterceptor } from 'src/common/interceptors/file-cleanup.middleware';
+import { Public } from '@prisma/client/runtime/library';
 
 @Controller('users')
 export class UsersController {
@@ -52,11 +53,9 @@ export class UsersController {
             throw error;
         }
     }
-
+    
     @Get('search/:term')
     search(@Param('term') term: string) {
         return this.usersService.search(term);
     }
-
-
 }
